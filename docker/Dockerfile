@@ -16,7 +16,7 @@ RUN apt install -y libglib2.0-0
 RUN apt install -y libsm6 libxext6
 
 # Install bindsnet and dependencies
-RUN pip install -U bindsnet
+RUN pip install git+https://github.com/BindsNET/bindsnet.git
 
 # Install git
 RUN apt-get install -y git-core
