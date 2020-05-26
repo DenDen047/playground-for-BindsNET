@@ -1,8 +1,12 @@
 #!/bin/bash
 
 CURRENT_PATH=$(pwd)
+IMAGE_NAME="denden047/bindsnet_env:latest"
 
-cd docker && \
-docker-compose up -d --build && \
-docker-compose ps && \
-docker exec -it app /bin/bash
+docker build -t ${IMAGE_NAME} ./docker && \
+docker run -it --rm \
+    --gpus '"device=0"' \
+    -v ${CURRENT_PATH}/src/:/src/ \
+    -v ${CURRENT_PATH}/data/:/data/ \
+    -w /src \
+    ${IMAGE_NAME}
