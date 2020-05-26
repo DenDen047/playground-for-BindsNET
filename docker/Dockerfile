@@ -1,11 +1,13 @@
-FROM arwineap/docker-ubuntu-python3.6
+FROM python:3.6
+# FROM arwineap/docker-ubuntu-python3.6
 
 RUN apt-get update
 
 # Install latest version of python3
-RUN apt install -y python3.6
+# RUN apt-get install -y python3.6
 RUN pip install --upgrade setuptools
-RUN apt-get install -y python3.6-dev build-essential
+# RUN apt-get install -y python3.6-dev
+RUN apt-get install -y build-essential
 RUN apt-get install -y libblas-dev libatlas-base-dev
 
 # Upgrade pip
@@ -30,8 +32,8 @@ RUN touch ~/.bash_aliases
 RUN echo alias python='/usr/bin/python3.6' >> ~/.bash_aliases
 
 # Create a working directory to work from
-RUN mkdir working
+# RUN mkdir working
 
 # Always start from /working
-RUN chmod 777 \/working
-ENTRYPOINT ["/working"]
+# RUN chmod 777 \/working
+# ENTRYPOINT ["/working"]

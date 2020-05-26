@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CURRENT_PATH=$(PWD)
+CURRENT_PATH=$(pwd)
 
 cd docker && \
 docker-compose up -d --build && \
