@@ -20,13 +20,10 @@ RUN python3.6 -m pip install --upgrade setuptools
 RUN apt-get install -y python3-tk
 RUN apt-get install -y libglib2.0-0
 RUN apt-get install -y libsm6 libxext6
-RUN apt-get install -y git
+RUN apt-get install -y git git-core
 
 # Install bindsnet and dependencies
-RUN python3.6 -m pip install git+https://github.com/BindsNET/bindsnet.git
-
-# Install git
-RUN apt-get install -y git-core
+RUN python3.6 -m pip install bindsnet
 
 # Install vim
 RUN apt-get install -y vim
