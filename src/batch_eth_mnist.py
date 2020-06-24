@@ -28,6 +28,7 @@ from bindsnet.analysis.plotting import (
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--model", type=str, default='DiehlAndCook2015')
+parser.add_argument("--model_config", type=str, default='/configs/mnist_models.json')
 parser.add_argument("--seed", type=int, default=0)
 parser.add_argument("--n_neurons", type=int, default=100)
 parser.add_argument("--batch_size", type=int, default=32)
@@ -51,6 +52,7 @@ parser.set_defaults(plot=False, gpu=False)
 args = parser.parse_args()
 
 model = args.model
+model_config = args.model_config
 seed = args.seed
 n_neurons = args.n_neurons
 batch_size = args.batch_size
@@ -87,16 +89,19 @@ n_sqrt = int(np.ceil(np.sqrt(n_neurons)))
 start_intensity = intensity
 
 # Build network.
-
 def generate_model(conf_path: str = '/configs/models.json'):
     # import the config file
     with open(conf_path, 'r') as f:
         config = json.load(f)
 
-    print(config)
+    # generate args_str
+    args_str = ''
+    for k, v in config[model].items():
+        args_str += '{}={}, '.format(k, v)
 
-    return eval(f'Models.{model}(n_inpt=784, inpt_shape=(1, 28, 28))')
-network = generate_model()
+    return eval(f'Models.{model}({args_str})')
+
+network = generate_model(conf_path=model_config)
 # network = eval(f'Models.{model}')(
 #     n_inpt=784,
 #     n_neurons=n_neurons,
