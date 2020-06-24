@@ -1,6 +1,7 @@
 import os
 import torch
 import argparse
+import json
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -13,7 +14,7 @@ from bindsnet import ROOT_DIR
 from bindsnet.datasets import MNIST, DataLoader
 from bindsnet.encoding import PoissonEncoder
 from bindsnet.evaluation import all_activity, proportion_weighting, assign_labels
-from bindsnet.models import DiehlAndCook2015
+import bindsnet.models as Models
 from bindsnet.network.monitors import Monitor
 from bindsnet.utils import get_square_weights, get_square_assignments
 from bindsnet.analysis.plotting import (
@@ -87,17 +88,26 @@ start_intensity = intensity
 
 # Build network.
 
-network = eval(model)(
-    n_inpt=784,
-    n_neurons=n_neurons,
-    exc=exc,
-    inh=inh,
-    dt=dt,
-    norm=78.4,
-    nu=(1e-4, 1e-2),
-    theta_plus=theta_plus,
-    inpt_shape=(1, 28, 28),
-)
+def generate_model(conf_path: str = '/configs/models.json'):
+    # import the config file
+    with open(conf_path, 'r') as f:
+        config = json.load(f)
+
+    print(config)
+
+    return eval(f'Models.{model}(n_inpt=784, inpt_shape=(1, 28, 28))')
+network = generate_model()
+# network = eval(f'Models.{model}')(
+#     n_inpt=784,
+#     n_neurons=n_neurons,
+#     exc=exc,
+#     inh=inh,
+#     dt=dt,
+#     norm=78.4,
+#     nu=(1e-4, 1e-2),
+#     theta_plus=theta_plus,
+#     inpt_shape=(1, 28, 28),
+# )
 
 # Directs network to GPU
 if gpu:
