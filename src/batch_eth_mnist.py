@@ -138,12 +138,6 @@ rates = torch.zeros(n_neurons, n_classes)
 # Sequence of accuracy estimates.
 accuracy = {"all": [], "proportion": []}
 
-# Voltage recording for excitatory and inhibitory layers.
-exc_voltage_monitor = Monitor(network.layers["Ae"], ["v"], time=int(time/dt))
-inh_voltage_monitor = Monitor(network.layers["Ai"], ["v"], time=int(time/dt))
-network.add_monitor(exc_voltage_monitor, name="exc_voltage")
-network.add_monitor(inh_voltage_monitor, name="inh_voltage")
-
 # Set up monitors for spikes and voltages
 spikes = {}
 for layer in set(network.layers):
@@ -249,18 +243,6 @@ for epoch in range(n_epochs):
         # Run the network on the input.
         network.run(inputs=inputs, time=time, input_time_dim=1)
 
-        # Add to spikes recording.
-        s = spikes["Ae"].get("s").permute((1, 0, 2))
-        spike_record[
-            (step * batch_size)
-            % update_interval : (step * batch_size % update_interval)
-            + s.size(0)
-        ] = s
-
-        # Get voltage recording.
-        exc_voltages = exc_voltage_monitor.get("v")
-        inh_voltages = inh_voltage_monitor.get("v")
-
         # Optionally plot various simulation information.
         if plot:
             image = batch["image"][:, 0].view(28, 28)
@@ -273,7 +255,6 @@ for epoch in range(n_epochs):
             spikes_ = {
                 layer: spikes[layer].get("s")[:, 0].contiguous() for layer in spikes
             }
-            voltages = {"Ae": exc_voltages, "Ai": inh_voltages}
 
             inpt_axes, inpt_ims = plot_input(
                 image, inpt, label=labels[step], axes=inpt_axes, ims=inpt_ims

@@ -1,7 +1,13 @@
 {
     "TwoLayerNetwork": {
-        "key": "key1",
-        "number": 1
+        "n_inpt": 784,
+        "n_neurons": 100,
+        "dt": 1.0,
+        "wmin": 0.0,
+        "wmax": 1.0,
+        "nu": "(1e-4, 1e-2)",
+        "reduction": "None",
+        "norm": 78.4
     },
 
     "DiehlAndCook2015": {
@@ -14,5 +20,51 @@
         "nu": "(1e-4, 1e-2)",
         "theta_plus": 0.05,
         "inpt_shape": "(1, 28, 28)"
+    },
+
+    "DiehlAndCook2015v2": {
+        "n_inpt": 784,
+        "n_neurons": 100,
+        "inh": 120,
+        "dt": 1.0,
+        "norm": 78.4,
+        "nu": "(1e-4, 1e-2)",
+        "theta_plus": 0.05,
+        "wmin": 0.0,
+        "wmax": 1.0,
+        "inpt_shape": "(1, 28, 28)"
+    },
+
+    "IncreasingInhibitionNetwork": {
+        "n_input": 784,
+        "n_neurons": 100,
+        "start_inhib": 1.0,
+        "max_inhib": 100.0,
+        "dt": 1.0,
+        "nu": "(1e-4, 1e-2)",
+        "reduction": "None",
+        "wmin": 0.0,
+        "wmax": 1.0,
+        "norm": 78.4,
+        "theta_plus": 0.05,
+        "tc_theta_decay": 1e7
+    },
+
+    "LocallyConnectedNetwork": {
+        "n_inpt": 784,
+        "input_shape": "(1, 28, 28)",
+        "kernel_size": "(1, (3,3))",
+        "stride": "(1, (1,1))",
+        "n_filters": 3,
+        "inh": 25.0,
+        "dt": 1.0,
+        "nu": "(1e-4, 1e-2)",
+        "reduction": "None",
+        "theta_plus": 0.05,
+        "tc_theta_decay": 1e7,
+        "wmin": 0.0,
+        "wmax": 1.0,
+        "norm": 0.2
     }
+
 }
