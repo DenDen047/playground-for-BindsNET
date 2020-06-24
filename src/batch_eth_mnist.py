@@ -26,6 +26,7 @@ from bindsnet.analysis.plotting import (
 )
 
 parser = argparse.ArgumentParser()
+parser.add_argument("--model", type=str, default='DiehlAndCook2015')
 parser.add_argument("--seed", type=int, default=0)
 parser.add_argument("--n_neurons", type=int, default=100)
 parser.add_argument("--batch_size", type=int, default=32)
@@ -48,6 +49,7 @@ parser.set_defaults(plot=False, gpu=False)
 
 args = parser.parse_args()
 
+model = args.model
 seed = args.seed
 n_neurons = args.n_neurons
 batch_size = args.batch_size
@@ -84,7 +86,8 @@ n_sqrt = int(np.ceil(np.sqrt(n_neurons)))
 start_intensity = intensity
 
 # Build network.
-network = DiehlAndCook2015(
+
+network = eval(model)(
     n_inpt=784,
     n_neurons=n_neurons,
     exc=exc,
