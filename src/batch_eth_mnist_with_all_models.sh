@@ -2,8 +2,8 @@
 
 # create an array of model names
 models=(\
-    'TwoLayerNetwork' \
     'DiehlAndCook2015' \
+    'DiehlAndCook2015v2' \
 )
 
 # make a file to recode the results

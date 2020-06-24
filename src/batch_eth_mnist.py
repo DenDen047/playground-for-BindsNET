@@ -247,7 +247,6 @@ for epoch in range(n_epochs):
         if plot:
             image = batch["image"][:, 0].view(28, 28)
             inpt = inputs["X"][:, 0].view(time, 784).sum(0).view(28, 28)
-            input_exc_weights = network.connections[("X", "Ae")].w
             square_weights = get_square_weights(
                 input_exc_weights.view(784, n_neurons), n_sqrt, 28
             )
@@ -318,9 +317,6 @@ for step, batch in enumerate(tqdm(test_dataloader)):
 
     # Run the network on the input.
     network.run(inputs=inputs, time=time, input_time_dim=1)
-
-    # Add to spikes recording.
-    spike_record = spikes["Ae"].get("s").permute((1, 0, 2))
 
     # Convert the array of labels into a tensor
     label_tensor = torch.tensor(batch["label"])
