@@ -138,7 +138,6 @@ for (i, dataPoint) in pbar:
     pbar.set_description_str("Train progress: (%d / %d)" % (i, n_iters))
 
     network.run(inputs={"Input": datum}, time=time, input_time_dim=1)
-    print(spikes["Output"].get("s").shape)
     training_pairs.append([
         spikes["Output"].get("s").sum(axis=0),  # [time, 1, n_neurons] -> [1, n_neurons]
         label
