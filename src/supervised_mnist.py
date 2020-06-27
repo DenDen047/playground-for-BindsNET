@@ -198,7 +198,11 @@ for (i, datum) in enumerate(dataloader):
         inputs = {"X": image.cuda().view(time, 1, 1, 28, 28)}
     else:
         inputs = {"X": image.view(time, 1, 1, 28, 28)}
-    network.run(inputs=inputs, time=time, clamp=clamp)
+    network.run(
+        inputs=inputs,
+        time=time,
+        clamp=clamp # to force neurons to spike
+    )
 
     # Get voltage recording.
     exc_voltages = exc_voltage_monitor.get("v")
