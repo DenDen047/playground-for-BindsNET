@@ -159,7 +159,6 @@ for epoch in range(n_epochs):
 
     for step, batch in enumerate(tqdm(train_dataloader)):
         # Get next input sample.
-
         inputs = {"X": batch["encoded_image"].view(time, 1, 1, 28, 28)}
         if gpu:
             inputs = {k: v.cuda() for k, v in inputs.items()}
