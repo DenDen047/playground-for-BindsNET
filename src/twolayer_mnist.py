@@ -308,7 +308,8 @@ start = t()
 
 for step, batch in enumerate(tqdm(test_dataloader)):
     # Get next input sample.
-    inputs = {"X": batch["encoded_image"]}
+    input_datum = np.reshape(batch["encoded_image"], (100, 32, 784))
+    inputs = {"X": input_datum}
     if gpu:
         inputs = {k: v.cuda() for k, v in inputs.items()}
 
@@ -316,7 +317,7 @@ for step, batch in enumerate(tqdm(test_dataloader)):
     network.run(inputs=inputs, time=time, input_time_dim=1)
 
     # Add to spikes recording.
-    spike_record = spikes["Ae"].get("s").permute((1, 0, 2))
+    spike_record = spikes["X"].get("s").permute((1, 0, 2))
 
     # Convert the array of labels into a tensor
     label_tensor = torch.tensor(batch["label"])
