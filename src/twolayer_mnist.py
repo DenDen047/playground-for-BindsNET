@@ -13,7 +13,7 @@ from bindsnet import ROOT_DIR
 from bindsnet.datasets import MNIST, DataLoader
 from bindsnet.encoding import PoissonEncoder
 from bindsnet.evaluation import all_activity, proportion_weighting, assign_labels
-from bindsnet.models import DiehlAndCook2015
+from bindsnet.models import TwoLayerNetwork
 from bindsnet.network.monitors import Monitor
 from bindsnet.utils import get_square_weights, get_square_assignments
 from bindsnet.analysis.plotting import (
@@ -33,9 +33,8 @@ parser.add_argument("--n_epochs", type=int, default=1)
 parser.add_argument("--n_test", type=int, default=10000)
 parser.add_argument("--n_workers", type=int, default=-1)
 parser.add_argument("--update_steps", type=int, default=256)
-parser.add_argument("--exc", type=float, default=22.5)
-parser.add_argument("--inh", type=float, default=120)
-parser.add_argument("--theta_plus", type=float, default=0.05)
+parser.add_argument("--wmin", type=float, default=0.0)
+parser.add_argument("--wmax", type=float, default=1.0)
 parser.add_argument("--time", type=int, default=100)
 parser.add_argument("--dt", type=int, default=1.0)  # milliseconds
 parser.add_argument("--intensity", type=float, default=128)
@@ -55,9 +54,8 @@ n_epochs = args.n_epochs
 n_test = args.n_test
 n_workers = args.n_workers
 update_steps = args.update_steps
-exc = args.exc
-inh = args.inh
-theta_plus = args.theta_plus
+wmin = args.wmin
+wmax = args.wmax
 time = args.time
 dt = args.dt
 intensity = args.intensity
@@ -84,16 +82,15 @@ n_sqrt = int(np.ceil(np.sqrt(n_neurons)))
 start_intensity = intensity
 
 # Build network.
-network = DiehlAndCook2015(
+network = TwoLayerNetwork(  # Implements an ``Input`` instance connected to a ``LIFNodes`` instance with a fully-connected ``Connection``.
     n_inpt=784,
     n_neurons=n_neurons,
-    exc=exc,
-    inh=inh,
     dt=dt,
-    norm=78.4,
     nu=(1e-4, 1e-2),
-    theta_plus=theta_plus,
-    inpt_shape=(1, 28, 28),
+    norm=78.4,
+    wmin=wmin,  # Minimum allowed weight on ``Input`` to ``LIFNodes`` synapses.
+    wmax=wmax,  # Maximum allowed weight on ``Input`` to ``LIFNodes`` synapses.
+    reduction=None, # ``Input`` to ``LIFNodes`` layer connection weights normalization constant.
 )
 
 # Directs network to GPU
@@ -121,10 +118,8 @@ rates = torch.zeros(n_neurons, n_classes)
 accuracy = {"all": [], "proportion": []}
 
 # Voltage recording for excitatory and inhibitory layers.
-exc_voltage_monitor = Monitor(network.layers["Ae"], ["v"], time=int(time/dt))
-inh_voltage_monitor = Monitor(network.layers["Ai"], ["v"], time=int(time/dt))
-network.add_monitor(exc_voltage_monitor, name="exc_voltage")
-network.add_monitor(inh_voltage_monitor, name="inh_voltage")
+y_value_monitor = Monitor(network.layers["Y"], ["v"], time=int(time/dt))
+network.add_monitor(y_value_monitor, name="y_value")
 
 # Set up monitors for spikes and voltages
 spikes = {}
@@ -168,7 +163,8 @@ for epoch in range(n_epochs):
 
     for step, batch in enumerate(tqdm(train_dataloader)):
         # Get next input sample.
-        inputs = {"X": batch["encoded_image"]}
+        input_datum = np.reshape(batch["encoded_image"], (100, 32, 784))
+        inputs = {"X": input_datum}
         if gpu:
             inputs = {k: v.cuda() for k, v in inputs.items()}
 
@@ -231,17 +227,16 @@ for epoch in range(n_epochs):
         # Run the network on the input.
         network.run(inputs=inputs, time=time, input_time_dim=1)
 
-        # Add to spikes recording.
-        s = spikes["Ae"].get("s").permute((1, 0, 2))
-        spike_record[
-            (step * batch_size)
-            % update_interval : (step * batch_size % update_interval)
-            + s.size(0)
-        ] = s
+        # # Add to spikes recording.
+        # s = spikes["X"].get("s").permute((1, 0, 2))
+        # spike_record[
+        #     (step * batch_size)
+        #     % update_interval : (step * batch_size % update_interval)
+        #     + s.size(0)
+        # ] = s
 
         # Get voltage recording.
-        exc_voltages = exc_voltage_monitor.get("v")
-        inh_voltages = inh_voltage_monitor.get("v")
+        inh_voltages = y_value_monitor.get("v")
 
         # Optionally plot various simulation information.
         if plot:
