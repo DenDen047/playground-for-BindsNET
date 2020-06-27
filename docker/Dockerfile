@@ -23,7 +23,8 @@ RUN apt-get install -y libsm6 libxext6
 RUN apt-get install -y git git-core
 
 # Install bindsnet and dependencies
-RUN python3.6 -m pip install bindsnet
+# RUN python3.6 -m pip install bindsnet
+RUN python3.6 -m pip install git+https://github.com/BindsNET/bindsnet.git
 
 # Install vim
 RUN apt-get install -y vim
