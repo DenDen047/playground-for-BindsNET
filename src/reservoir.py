@@ -73,24 +73,28 @@ else:
         gpu = False
 
 
+# Network definition
+# layers
 network = Network(dt=dt)
 inpt = Input(784, shape=(1, 28, 28))
-network.add_layer(inpt, name="I")
+network.add_layer(inpt, name="Input")
 output = LIFNodes(n_neurons, thresh=-52 + np.random.randn(n_neurons).astype(float))
-network.add_layer(output, name="O")
+network.add_layer(output, name="Output")
+
+# connections
 C1 = Connection(source=inpt, target=output, w=0.5 * torch.randn(inpt.n, output.n))
 C2 = Connection(source=output, target=output, w=0.5 * torch.randn(output.n, output.n))
+network.add_connection(C1, source="Input", target="Output")
+network.add_connection(C2, source="Output", target="Output")
 
-network.add_connection(C1, source="I", target="O")
-network.add_connection(C2, source="O", target="O")
-
+# monitors
 spikes = {}
 for l in network.layers:
     spikes[l] = Monitor(network.layers[l], ["s"], time=time)
     network.add_monitor(spikes[l], name="%s_spikes" % l)
 
-voltages = {"O": Monitor(network.layers["O"], ["v"], time=time)}
-network.add_monitor(voltages["O"], name="O_voltages")
+voltages = {"Output": Monitor(network.layers["Output"], ["v"], time=time)}
+network.add_monitor(voltages["Output"], name="O_voltages")
 
 # Directs network to GPU
 if gpu:
@@ -133,14 +137,18 @@ for (i, dataPoint) in pbar:
     label = dataPoint["label"]
     pbar.set_description_str("Train progress: (%d / %d)" % (i, n_iters))
 
-    network.run(inputs={"I": datum}, time=time, input_time_dim=1)
-    training_pairs.append([spikes["O"].get("s").sum(0), label])
+    network.run(inputs={"Input": datum}, time=time, input_time_dim=1)
+    print(spikes["Output"].get("s").shape)
+    training_pairs.append([
+        spikes["Output"].get("s").sum(axis=0),  # [time, 1, n_neurons] -> [1, n_neurons]
+        label
+    ])
 
     if plot:
 
         inpt_axes, inpt_ims = plot_input(
             dataPoint["image"].view(28, 28),
-            datum.view(int(time/dt), 784).sum(0).view(28, 28),
+            datum.view(int(time/dt), 784).sum(axis=0).view(28, 28),
             label=label,
             axes=inpt_axes,
             ims=inpt_ims,
@@ -215,8 +223,8 @@ for (i, dataPoint) in pbar:
     label = dataPoint["label"]
     pbar.set_description_str("Testing progress: (%d / %d)" % (i, n_iters))
 
-    network.run(inputs={"I": datum}, time=250, input_time_dim=1)
-    test_pairs.append([spikes["O"].get("s").sum(0), label])
+    network.run(inputs={"Input": datum}, time=250, input_time_dim=1)
+    test_pairs.append([spikes["Output"].get("s").sum(0), label])
 
     if plot:
         inpt_axes, inpt_ims = plot_input(
