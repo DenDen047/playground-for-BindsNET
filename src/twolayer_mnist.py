@@ -227,13 +227,13 @@ for epoch in range(n_epochs):
         # Run the network on the input.
         network.run(inputs=inputs, time=time, input_time_dim=1)
 
-        # # Add to spikes recording.
-        # s = spikes["X"].get("s").permute((1, 0, 2))
-        # spike_record[
-        #     (step * batch_size)
-        #     % update_interval : (step * batch_size % update_interval)
-        #     + s.size(0)
-        # ] = s
+        # Add to spikes recording.
+        s = spikes["X"].get("s").permute((1, 0, 2))
+        spike_record[
+            (step * batch_size)
+            % update_interval : (step * batch_size % update_interval)
+            + s.size(0)
+        ] = s
 
         # Get voltage recording.
         inh_voltages = y_value_monitor.get("v")
