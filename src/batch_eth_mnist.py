@@ -29,7 +29,6 @@ from bindsnet.analysis.plotting import (
     plot_voltages,
 )
 from bindsnet.learning import (
-    LearningRule,
     NoOp,
     PostPre,
     WeightDependentPostPre,
@@ -47,6 +46,7 @@ parser.add_argument("--n_epochs", type=int, default=1)
 parser.add_argument("--n_test", type=int, default=10000)
 parser.add_argument("--n_workers", type=int, default=-1)
 parser.add_argument("--update_steps", type=int, default=256)
+parser.add_argument("--update_rule", type=str, default='PostPre')
 parser.add_argument("--exc", type=float, default=22.5)
 parser.add_argument("--inh", type=float, default=120)
 parser.add_argument("--theta_plus", type=float, default=0.05)
@@ -61,6 +61,7 @@ parser.add_argument("--gpu", dest="gpu", action="store_true")
 parser.set_defaults(plot=False, gpu=False)
 
 args = parser.parse_args()
+print(args)
 
 seed = args.seed
 n_neurons = args.n_neurons
@@ -185,7 +186,7 @@ class DiehlAndCook2015(Network):
             source=input_layer,
             target=exc_layer,
             w=w,
-            update_rule=Hebbian,
+            update_rule=eval(args.update_rule),
             nu=nu,
             reduction=reduction,
             wmin=wmin,
@@ -402,8 +403,8 @@ for epoch in range(n_epochs):
 
         network.reset_state_variables()  # Reset state variables.
 
-        if step % update_steps == 0 and step > 0:
-            break
+        # if step % update_steps == 0 and step > 0:
+        #     break
 
 print("Progress: %d / %d (%.4f seconds)" % (epoch + 1, n_epochs, t() - start))
 print("Training complete.\n")
@@ -471,6 +472,7 @@ for step, batch in enumerate(tqdm(test_dataloader)):
 
     network.reset_state_variables()  # Reset state variables.
 
+print(args)
 print("\nAll activity accuracy: %.2f" % (accuracy["all"] / test_dataset.test_labels.shape[0]))
 print("Proportion weighting accuracy: %.2f \n" % ( accuracy["proportion"] / test_dataset.test_labels.shape[0]))
 
